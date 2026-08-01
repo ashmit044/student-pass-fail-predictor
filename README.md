@@ -1,6 +1,6 @@
 # Student Pass/Fail Predictor
 
-A beginner-friendly machine-learning web app that predicts whether a student is likely to **Pass** or **Fail**. It implements the **Student Pass/Fail Prediction** project from the supplied beginner AI project list.
+A beginner-friendly command-line machine-learning project that predicts whether a student is likely to **Pass** or **Fail**. It implements the **Student Pass/Fail Prediction** project from the supplied beginner AI project list.
 
 ## What it does
 
@@ -11,25 +11,23 @@ The app accepts four inputs:
 - Previous score percentage
 - Number of assignments completed
 
-It passes these values to a Decision Tree classifier and displays the predicted result and the model's confidence.
+It passes these values to a Decision Tree classifier and prints the predicted result and the model's confidence in the terminal.
 
 ## How the code works
 
 1. `data/student_performance.csv` contains labelled example records. Each row has the four student features and an expected result (`Pass` or `Fail`).
 2. `app.py` loads the CSV using Pandas, splits the records into training and test sets, then trains a `DecisionTreeClassifier` from scikit-learn.
 3. The test set is used to calculate an accuracy figure, which is displayed in the app.
-4. When the form is submitted, Flask validates the entered values, creates a one-row DataFrame with the same feature columns used for training, and asks the trained model for a prediction.
-5. Flask renders `templates/index.html`; `static/style.css` provides the responsive layout.
+4. When the user enters the values in the terminal, `app.py` validates them, creates a one-row DataFrame with the same feature columns used for training, and asks the trained model for a prediction.
+5. The result, confidence, and validation accuracy are printed in the terminal. No web interface is used.
 
 ## Project structure
 
 ```text
 student-pass-fail-predictor/
-├── app.py                         # Flask app and ML training/prediction logic
+├── app.py                         # Command-line ML training/prediction logic
 ├── requirements.txt                # Python dependencies
-├── data/student_performance.csv    # Demo training data
-├── templates/index.html            # Web interface
-└── static/style.css                # Styling
+└── data/student_performance.csv    # Demo training data
 ```
 
 ## Run locally
@@ -42,14 +40,20 @@ student-pass-fail-predictor/
    .venv\Scripts\activate
    ```
 
-3. Install dependencies and start the app:
+3. Install dependencies and start the program:
 
    ```bash
-   pip install -r requirements.txt
+   python -m pip install -r requirements.txt
    python app.py
    ```
 
-4. Open `http://127.0.0.1:5000` in your browser.
+4. Enter the four requested values in the terminal.
+
+You can also run one non-interactive example:
+
+```bash
+python app.py --study-hours 7 --attendance 80 --previous-score 72 --assignments-completed 9
+```
 
 ## Example input
 
