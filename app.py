@@ -51,6 +51,27 @@ def get_input_values():
     return study_hours, attendance, previous_score, assignments_completed
 
 
+def predict_result(values):
+    """Return a prediction while enforcing minimum academic requirements.
+
+    The training data is intentionally small for a beginner project. A student
+    with very low attendance or no evidence of prior learning should not pass
+    merely because they completed assignments, so those cases are handled
+    before the machine-learning prediction.
+    """
+    study_hours, attendance, previous_score, assignments_completed = values
+    if attendance < 40 or previous_score < 40:
+        return "Fail", 100.0, "Attendance or previous score is below the minimum requirement."
+
+    sample = pd.DataFrame(
+        [[study_hours, attendance, previous_score, assignments_completed]],
+        columns=["study_hours", "attendance", "previous_score", "assignments_completed"],
+    )
+    result = MODEL.predict(sample)[0]
+    confidence = max(MODEL.predict_proba(sample)[0]) * 100
+    return result, confidence, "Prediction made by the Decision Tree model."
+
+
 def main():
     """Train the model, collect input in the terminal, and display a result."""
     parser = argparse.ArgumentParser(description="Predict student pass or fail result.")
@@ -70,14 +91,10 @@ def main():
         else:
             values = get_input_values()
 
-        sample = pd.DataFrame(
-            [values],
-            columns=["study_hours", "attendance", "previous_score", "assignments_completed"],
-        )
-        result = MODEL.predict(sample)[0]
-        confidence = max(MODEL.predict_proba(sample)[0]) * 100
+        result, confidence, explanation = predict_result(values)
         print(f"\nPrediction: {result}")
         print(f"Model confidence: {confidence:.1f}%")
+        print(f"Reason: {explanation}")
         print(f"Validation accuracy on the included demo data: {MODEL_ACCURACY:.1%}")
     except ValueError as error:
         print(f"Input error: {error}")
