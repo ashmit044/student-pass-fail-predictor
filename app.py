@@ -55,13 +55,15 @@ def predict_result(values):
     """Return a prediction while enforcing minimum academic requirements.
 
     The training data is intentionally small for a beginner project. A student
-    with very low attendance or no evidence of prior learning should not pass
-    merely because they completed assignments, so those cases are handled
-    before the machine-learning prediction.
+    with low attendance or too little study time should not pass merely because
+    they completed assignments, so those cases are handled before the
+    machine-learning prediction.
     """
     study_hours, attendance, previous_score, assignments_completed = values
-    if attendance < 40 or previous_score < 40:
-        return "Fail", 100.0, "Attendance or previous score is below the minimum requirement."
+    if attendance < 75:
+        return "Fail", 100.0, "Attendance is below the 75% minimum requirement."
+    if study_hours < 2:
+        return "Fail", 100.0, "Daily study time is below the 2-hour minimum requirement."
 
     sample = pd.DataFrame(
         [[study_hours, attendance, previous_score, assignments_completed]],
