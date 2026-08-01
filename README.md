@@ -19,7 +19,8 @@ It passes these values to a Decision Tree classifier and prints the predicted re
 2. `app.py` loads the CSV using Pandas, splits the records into training and test sets, then trains a `DecisionTreeClassifier` from scikit-learn.
 3. The test set is used to calculate an accuracy figure, which is displayed in the app.
 4. When the user enters the values in the terminal, `app.py` validates them, creates a one-row DataFrame with the same feature columns used for training, and asks the trained model for a prediction.
-5. The result, confidence, and validation accuracy are printed in the terminal. No web interface is used.
+5. Before using the model, the program applies a minimum academic rule: attendance below 40% or a previous score below 40% always produces `Fail`. This stops completed assignments alone from producing an unrealistic pass result.
+6. The result, confidence, reason, and validation accuracy are printed in the terminal. No web interface is used.
 
 ## Project structure
 
@@ -65,6 +66,16 @@ python app.py --study-hours 7 --attendance 80 --previous-score 72 --assignments-
 | Assignments completed | 9 |
 
 The demo model should predict **Pass** for this profile.
+
+## Academic minimum rule
+
+The dataset is deliberately small and synthetic for learning purposes. To make the output sensible, a student is automatically predicted as **Fail** when either attendance or previous score is below 40%, even if they have completed many assignments. For example:
+
+```bash
+python app.py --study-hours 0 --attendance 0 --previous-score 0 --assignments-completed 10
+```
+
+This returns **Fail**.
 
 ## Notes
 
