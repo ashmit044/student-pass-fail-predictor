@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Student Pass/Fail Predictor</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main class="card">
+    <p class="eyebrow">BEGINNER AI PROJECT</p>
+    <h1>Student Pass/Fail Predictor</h1>
+    <p class="intro">A Decision Tree model estimates whether a student is likely to pass based on academic habits.</p>
+
+    <form method="post">
+      <label>Daily study hours<input name="study_hours" type="number" min="0" max="24" step="0.5" required value="{{ values.study_hours }}"></label>
+      <label>Attendance (%)<input name="attendance" type="number" min="0" max="100" step="1" required value="{{ values.attendance }}"></label>
+      <label>Previous score (%)<input name="previous_score" type="number" min="0" max="100" step="1" required value="{{ values.previous_score }}"></label>
+      <label>Assignments completed<input name="assignments_completed" type="number" min="0" max="20" step="1" required value="{{ values.assignments_completed }}"></label>
+      <button type="submit">Predict result</button>
+    </form>
+
+    {% if error %}<p class="message error">{{ error }}</p>{% endif %}
+    {% if prediction %}
+      <section class="message {{ 'pass' if prediction.result == 'Pass' else 'fail' }}">
+        <h2>Prediction: {{ prediction.result }}</h2>
+        <p>Model confidence: {{ prediction.confidence }}%</p>
+      </section>
+    {% endif %}
+    <p class="footnote">Validation accuracy on the included demo data: {{ accuracy }}%. This is an educational demonstration, not a real academic decision tool.</p>
+  </main>
+</body>
+</html>
