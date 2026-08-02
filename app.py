@@ -1,106 +1,152 @@
-"""Console program for predicting a student's pass/fail result."""
+"""Student Pass/Fail Predictor.
 
+A beginner Machine Learning application using DecisionTreeClassifier to predict whether a student passes or fails.
+Supports both Streamlit Web Interface and Command-Line Interface.
+"""
+
+import sys
 import argparse
 from pathlib import Path
-
 import pandas as pd
-from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import accuracy_score
 
 BASE_DIR = Path(__file__).resolve().parent
 DATA_PATH = BASE_DIR / "data" / "student_performance.csv"
 
+
 def train_model():
-    """Load the data, train the classifier, and return model accuracy."""
+    """Load performance CSV dataset and train a Decision Tree classifier."""
+    if not DATA_PATH.exists():
+        raise FileNotFoundError(f"Dataset file missing at: {DATA_PATH}")
+        
     data = pd.read_csv(DATA_PATH)
     features = ["study_hours", "attendance", "previous_score", "assignments_completed"]
-    x = data[features]
+    X = data[features]
     y = data["result"]
 
-    x_train, x_test, y_train, y_test = train_test_split(
-        x, y, test_size=0.25, random_state=42, stratify=y
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.25, random_state=42, stratify=y
     )
+    
+    # Decision Tree classifier with max_depth=4 to prevent overfitting
     model = DecisionTreeClassifier(max_depth=4, random_state=42)
-    model.fit(x_train, y_train)
-    accuracy = accuracy_score(y_test, model.predict(x_test))
-    return model, accuracy
+    model.fit(X_train, y_train)
+    
+    acc = accuracy_score(y_test, model.predict(X_test))
+    return model, acc, data
 
 
-MODEL, MODEL_ACCURACY = train_model()
+MODEL, MODEL_ACCURACY, DATASET = train_model()
 
 
-def validate_values(study_hours, attendance, previous_score, assignments_completed):
-    """Validate input ranges before a prediction is made."""
-    if not 0 <= study_hours <= 24:
-        raise ValueError("Study hours must be between 0 and 24.")
-    if not 0 <= attendance <= 100 or not 0 <= previous_score <= 100:
-        raise ValueError("Attendance and previous score must be between 0 and 100.")
-    if not 0 <= assignments_completed <= 20:
-        raise ValueError("Completed assignments must be between 0 and 20.")
+def validate_values(study_hours: float, attendance: float, previous_score: float, assignments: int):
+    """Validate numerical input ranges."""
+    if not (0 <= study_hours <= 24):
+        raise ValueError("Daily study hours must be between 0 and 24.")
+    if not (0 <= attendance <= 100):
+        raise ValueError("Attendance percentage must be between 0% and 100%.")
+    if not (0 <= previous_score <= 100):
+        raise ValueError("Previous score percentage must be between 0% and 100%.")
+    if not (0 <= assignments <= 20):
+        raise ValueError("Assignments completed must be between 0 and 20.")
 
 
-def get_input_values():
-    """Ask the user for the four features needed by the model."""
-    print("Enter the student's details:")
-    study_hours = float(input("Daily study hours: "))
-    attendance = float(input("Attendance percentage: "))
-    previous_score = float(input("Previous score percentage: "))
-    assignments_completed = int(input("Assignments completed: "))
-    validate_values(study_hours, attendance, previous_score, assignments_completed)
-    return study_hours, attendance, previous_score, assignments_completed
+def predict_result(study_hours: float, attendance: float, previous_score: float, assignments: int):
+    """Predict Pass/Fail while enforcing minimum academic eligibility rules."""
+    validate_values(study_hours, attendance, previous_score, assignments)
 
-
-def predict_result(values):
-    """Return a prediction while enforcing minimum academic requirements.
-
-    The training data is intentionally small for a beginner project. A student
-    with low attendance or too little study time should not pass merely because
-    they completed assignments, so those cases are handled before the
-    machine-learning prediction.
-    """
-    study_hours, attendance, previous_score, assignments_completed = values
-    if attendance < 75:
-        return "Fail", 100.0, "Attendance is below the 75% minimum requirement."
-    if study_hours < 2:
+    # Minimum eligibility rule checks
+    if attendance < 75.0:
+        return "Fail", 100.0, "Attendance is below the mandatory 75% requirement."
+    if study_hours < 2.0:
         return "Fail", 100.0, "Daily study time is below the 2-hour minimum requirement."
 
     sample = pd.DataFrame(
-        [[study_hours, attendance, previous_score, assignments_completed]],
+        [[study_hours, attendance, previous_score, assignments]],
         columns=["study_hours", "attendance", "previous_score", "assignments_completed"],
     )
-    result = MODEL.predict(sample)[0]
-    confidence = max(MODEL.predict_proba(sample)[0]) * 100
-    return result, confidence, "Prediction made by the Decision Tree model."
+    
+    pred = MODEL.predict(sample)[0]
+    probabilities = MODEL.predict_proba(sample)[0]
+    confidence = max(probabilities) * 100
+
+    return pred, confidence, "Prediction generated by Decision Tree Classifier."
 
 
-def main():
-    """Train the model, collect input in the terminal, and display a result."""
-    parser = argparse.ArgumentParser(description="Predict student pass or fail result.")
-    parser.add_argument("--study-hours", type=float)
-    parser.add_argument("--attendance", type=float)
-    parser.add_argument("--previous-score", type=float)
-    parser.add_argument("--assignments-completed", type=int)
+def run_cli():
+    """Run CLI interface."""
+    parser = argparse.ArgumentParser(description="Predict student pass or fail outcome.")
+    parser.add_argument("--study-hours", type=float, help="Daily study hours (e.g. 6.0)")
+    parser.add_argument("--attendance", type=float, help="Attendance % (e.g. 85.0)")
+    parser.add_argument("--previous-score", type=float, help="Previous grade % (e.g. 78.0)")
+    parser.add_argument("--assignments-completed", type=int, help="Completed assignments (e.g. 9)")
+    
     args = parser.parse_args()
-    provided_values = [args.study_hours, args.attendance, args.previous_score, args.assignments_completed]
+    provided = [args.study_hours, args.attendance, args.previous_score, args.assignments_completed]
+
+    if any(v is not None for v in provided):
+        if any(v is None for v in provided):
+            parser.error("Must provide all 4 parameters or run without arguments for interactive CLI.")
+        study_h, att, prev_s, assign = args.study_hours, args.attendance, args.previous_score, args.assignments_completed
+    else:
+        print("--- 🎓 Student Pass/Fail Predictor CLI ---")
+        study_h = float(input("Daily study hours: "))
+        att = float(input("Attendance percentage: "))
+        prev_s = float(input("Previous score percentage: "))
+        assign = int(input("Assignments completed: "))
 
     try:
-        if any(value is not None for value in provided_values):
-            if any(value is None for value in provided_values):
-                parser.error("Provide all four command-line options, or provide none for interactive mode.")
-            values = tuple(provided_values)
-            validate_values(*values)
-        else:
-            values = get_input_values()
+        result, conf, reason = predict_result(study_h, att, prev_s, assign)
+        print(f"\nPrediction: [{result}]")
+        print(f"Confidence: {conf:.1f}%")
+        print(f"Reason: {reason}")
+        print(f"Model Test Accuracy: {MODEL_ACCURACY:.1%}")
+    except ValueError as err:
+        print(f"Input Error: {err}")
 
-        result, confidence, explanation = predict_result(values)
-        print(f"\nPrediction: {result}")
-        print(f"Model confidence: {confidence:.1f}%")
-        print(f"Reason: {explanation}")
-        print(f"Validation accuracy on the included demo data: {MODEL_ACCURACY:.1%}")
-    except ValueError as error:
-        print(f"Input error: {error}")
+
+def run_streamlit():
+    """Run Streamlit Web GUI interface."""
+    import streamlit as st
+
+    st.set_page_config(page_title="Student Pass/Fail Predictor", page_icon="🎓", layout="centered")
+
+    st.title("🎓 Student Pass/Fail Predictor")
+    st.write("A beginner Machine Learning project using a **Decision Tree Classifier** to evaluate student academic performance.")
+
+    st.markdown("---")
+    st.subheader("📊 Enter Student Attributes")
+
+    col1, col2 = st.columns(2)
+    with col1:
+        study_hours = st.slider("Daily Study Hours:", 0.0, 16.0, 6.0, 0.5)
+        attendance = st.slider("Attendance Percentage (%):", 0.0, 100.0, 85.0, 1.0)
+    with col2:
+        previous_score = st.slider("Previous Test Score (%):", 0.0, 100.0, 75.0, 1.0)
+        assignments = st.slider("Assignments Completed:", 0, 20, 10, 1)
+
+    if st.button("Predict Outcome", type="primary"):
+        result, confidence, explanation = predict_result(study_hours, attendance, previous_score, assignments)
+
+        st.markdown("### 🎯 Result")
+        if result == "Pass":
+            st.success(f"🎉 **PREDICTION: PASS** (Confidence: {confidence:.1f}%)")
+        else:
+            st.error(f"⚠️ **PREDICTION: FAIL** (Confidence: {confidence:.1f}%)")
+
+        st.info(f"**Explanation:** {explanation}")
+        st.caption(f"Model Validation Accuracy on Demo Dataset: {MODEL_ACCURACY:.1%}")
 
 
 if __name__ == "__main__":
-    main()
+    # Check if running via streamlit
+    if "streamlit" in sys.modules or (len(sys.argv) > 1 and sys.argv[1].endswith(".py")):
+        try:
+            import streamlit as st
+            run_streamlit()
+        except ImportError:
+            run_cli()
+    else:
+        run_cli()
