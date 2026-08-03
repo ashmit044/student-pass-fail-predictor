@@ -1,87 +1,108 @@
-# Student Pass/Fail Predictor
+# 🎓 Student Pass/Fail Predictor
 
-A beginner-friendly command-line machine-learning project that predicts whether a student is likely to **Pass** or **Fail**. It implements the **Student Pass/Fail Prediction** project from the supplied beginner AI project list.
+<p align="left">
+  <img src="https://img.shields.io/badge/Python-3.10%2B-blue?style=flat-square&logo=python&logoColor=white" alt="Python" />
+  <img src="https://img.shields.io/badge/Machine%20Learning-Scikit--Learn-orange?style=flat-square&logo=scikit-learn&logoColor=white" alt="Scikit-Learn" />
+  <img src="https://img.shields.io/badge/Streamlit-1.25.0-FF4B4B?style=flat-square&logo=streamlit&logoColor=white" alt="Streamlit" />
+  <img src="https://img.shields.io/badge/License-MIT-green?style=flat-square" alt="License" />
+</p>
 
-## What it does
+A beginner-friendly Machine Learning project that predicts whether a student is likely to **Pass** or **Fail** based on study habits, attendance, and previous academic scores using a **Decision Tree Classifier**.
 
-The app accepts four inputs:
+I created this project as a CS student to practice binary classification with `scikit-learn`, rule enforcement, and building interactive web tools using `streamlit`.
 
-- Daily study hours
-- Attendance percentage
-- Previous score percentage
-- Number of assignments completed
+---
 
-It passes these values to a Decision Tree classifier and prints the predicted result and the model's confidence in the terminal.
+## ✨ Features
 
-## How the code works
+- 🌳 **Decision Tree Classifier**: Interpretable tree-based model trained on student performance metrics.
+- ⚙️ **Academic Minimum Eligibility Rules**: Automatic rule checks (minimum 75% attendance and 2 hours daily study required to pass).
+- 🌐 **Streamlit Web Dashboard**: Interactive sliders to adjust parameters and visualize real-time pass/fail predictions.
+- 💻 **CLI Mode**: Run predictions directly from command line arguments.
+- 🧪 **Unit Tests**: Full unit test coverage using `pytest`.
 
-1. `data/student_performance.csv` contains labelled example records. Each row has the four student features and an expected result (`Pass` or `Fail`).
-2. `app.py` loads the CSV using Pandas, splits the records into training and test sets, then trains a `DecisionTreeClassifier` from scikit-learn.
-3. The test set is used to calculate an accuracy figure, which is displayed in the app.
-4. When the user enters the values in the terminal, `app.py` validates them, creates a one-row DataFrame with the same feature columns used for training, and asks the trained model for a prediction.
-5. Before using the model, the program applies two minimum academic rules: attendance below 75% or daily study time below 2 hours always produces `Fail`. This stops completed assignments alone from producing an unrealistic pass result.
-6. The result, confidence, reason, and validation accuracy are printed in the terminal. No web interface is used.
+---
 
-## Project structure
+## 📊 Features Used for Prediction
 
-```text
-student-pass-fail-predictor/
-├── app.py                         # Command-line ML training/prediction logic
-├── requirements.txt                # Python dependencies
-└── data/student_performance.csv    # Demo training data
+1. **Daily Study Hours** (0 - 24 hours)
+2. **Attendance Percentage** (0% - 100%)
+3. **Previous Test Score** (0% - 100%)
+4. **Assignments Completed** (0 - 20 assignments)
+
+---
+
+## 🚀 Installation & Setup
+
+### 1. Clone Repository
+```bash
+git clone https://github.com/ashmit044/student-pass-fail-predictor.git
+cd student-pass-fail-predictor
 ```
 
-## Run locally
+### 2. Create Virtual Environment & Install Dependencies
+```bash
+python -m venv venv
+# On Windows:
+venv\Scripts\activate
+# On Linux/macOS:
+source venv/bin/activate
 
-1. Install Python 3.10 or newer.
-2. In the project folder, create and activate a virtual environment:
+pip install -r requirements.txt
+```
 
-   ```bash
-   python -m venv .venv
-   .venv\Scripts\activate
-   ```
+---
 
-3. Install dependencies and start the program:
+## 🏃 How to Run
 
-   ```bash
-   python -m pip install -r requirements.txt
-   python app.py
-   ```
+### 1. Launch Streamlit Web UI
+```bash
+streamlit run app.py
+```
 
-4. Enter the four requested values in the terminal.
+### 2. Run CLI Mode
+Interactive terminal prompt:
+```bash
+python app.py
+```
 
-You can also run one non-interactive example:
-
+Command-line parameters mode:
 ```bash
 python app.py --study-hours 7 --attendance 80 --previous-score 72 --assignments-completed 9
 ```
 
-## Example input
-
-| Input | Value |
-| --- | ---: |
-| Daily study hours | 7 |
-| Attendance | 80 |
-| Previous score | 72 |
-| Assignments completed | 9 |
-
-The demo model should predict **Pass** for this profile.
-
-## Academic minimum rules
-
-The dataset is deliberately small and synthetic for learning purposes. To make the output sensible, a student is automatically predicted as **Fail** when either condition is true:
-
-- Attendance is below 75%
-- Daily study time is below 2 hours
-
-For example:
-
+### 3. Run Unit Tests
 ```bash
-python app.py --study-hours 1 --attendance 90 --previous-score 80 --assignments-completed 10
+pytest
 ```
 
-This returns **Fail** because the student studies less than two hours per day. A student with 2 study hours but 74% attendance also returns **Fail**.
+---
 
-## Notes
+## 🛠️ Project Structure
 
-The included data is small and synthetic so the project is easy to understand and run. For a real use case, replace it with a larger, representative, privacy-safe dataset and assess the model for bias and reliability before using it for any decision.
+```text
+student-pass-fail-predictor/
+├── data/
+│   └── student_performance.csv    # Synthetic student performance dataset
+├── app.py                         # ML training, prediction logic, CLI & Streamlit app
+├── tests/
+│   └── test_predictor.py          # Unit test suite
+├── requirements.txt               # Dependencies
+├── .gitignore                     # Git ignore configuration
+└── README.md                      # Project documentation
+```
+
+---
+
+## 📚 What I Learned
+
+- Training a `DecisionTreeClassifier` with `max_depth` constraints to prevent overfitting.
+- Splitting data into training/testing sets using `train_test_split`.
+- Enforcing domain-specific validation rules alongside ML model predictions.
+- Building interactive sliders and status alerts using **Streamlit**.
+
+---
+
+## 📄 License
+
+Distributed under the MIT License.
