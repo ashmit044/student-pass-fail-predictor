@@ -36,3 +36,17 @@ def test_input_validation_errors():
 
     with pytest.raises(ValueError):
         validate_values(study_hours=5.0, attendance=150.0, previous_score=80.0, assignments=5)
+
+
+@pytest.mark.parametrize("field, value", [("study_hours", float("nan")), ("attendance", float("inf"))])
+def test_input_validation_rejects_non_finite_values(field, value):
+    inputs = {"study_hours": 5.0, "attendance": 80.0, "previous_score": 80.0, "assignments": 5}
+    inputs[field] = value
+
+    with pytest.raises(ValueError, match="finite"):
+        validate_values(**inputs)
+
+
+def test_input_validation_rejects_fractional_assignments():
+    with pytest.raises(ValueError, match="whole number"):
+        validate_values(study_hours=5.0, attendance=80.0, previous_score=80.0, assignments=4.5)

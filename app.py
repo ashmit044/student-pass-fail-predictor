@@ -6,6 +6,8 @@ Supports both Streamlit Web Interface and Command-Line Interface.
 
 import sys
 import argparse
+import math
+from numbers import Real
 from pathlib import Path
 import pandas as pd
 from sklearn.model_selection import train_test_split
@@ -43,6 +45,18 @@ MODEL, MODEL_ACCURACY, DATASET = train_model()
 
 def validate_values(study_hours: float, attendance: float, previous_score: float, assignments: int):
     """Validate numerical input ranges."""
+    values = {
+        "Daily study hours": study_hours,
+        "Attendance percentage": attendance,
+        "Previous score percentage": previous_score,
+        "Assignments completed": assignments,
+    }
+    for label, value in values.items():
+        if isinstance(value, bool) or not isinstance(value, Real) or not math.isfinite(value):
+            raise ValueError(f"{label} must be a finite number.")
+
+    if not float(assignments).is_integer():
+        raise ValueError("Assignments completed must be a whole number.")
     if not (0 <= study_hours <= 24):
         raise ValueError("Daily study hours must be between 0 and 24.")
     if not (0 <= attendance <= 100):
