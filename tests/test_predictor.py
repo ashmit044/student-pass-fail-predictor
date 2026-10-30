@@ -1,6 +1,7 @@
 """Unit tests for Student Pass/Fail Predictor."""
 
 import pytest
+import app
 from app import predict_result, validate_values
 
 
@@ -50,3 +51,12 @@ def test_input_validation_rejects_non_finite_values(field, value):
 def test_input_validation_rejects_fractional_assignments():
     with pytest.raises(ValueError, match="whole number"):
         validate_values(study_hours=5.0, attendance=80.0, previous_score=80.0, assignments=4.5)
+
+
+def test_interactive_cli_reports_invalid_numeric_input(monkeypatch, capsys):
+    monkeypatch.setattr(app.sys, "argv", ["app.py"])
+    monkeypatch.setattr("builtins.input", lambda _prompt: "five")
+
+    app.run_cli()
+
+    assert "Input Error" in capsys.readouterr().out

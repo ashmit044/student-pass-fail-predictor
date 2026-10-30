@@ -93,25 +93,30 @@ def run_cli():
     """Run CLI interface."""
     parser = argparse.ArgumentParser(description="Predict student pass or fail outcome.")
     parser.add_argument("--study-hours", type=float, help="Daily study hours (e.g. 6.0)")
-    parser.add_argument("--attendance", type=float, help="Attendance % (e.g. 85.0)")
-    parser.add_argument("--previous-score", type=float, help="Previous grade % (e.g. 78.0)")
+    parser.add_argument("--attendance", type=float, help="Attendance percent (e.g. 85.0)")
+    parser.add_argument("--previous-score", type=float, help="Previous grade percent (e.g. 78.0)")
     parser.add_argument("--assignments-completed", type=int, help="Completed assignments (e.g. 9)")
     
     args = parser.parse_args()
     provided = [args.study_hours, args.attendance, args.previous_score, args.assignments_completed]
 
-    if any(v is not None for v in provided):
-        if any(v is None for v in provided):
-            parser.error("Must provide all 4 parameters or run without arguments for interactive CLI.")
-        study_h, att, prev_s, assign = args.study_hours, args.attendance, args.previous_score, args.assignments_completed
-    else:
-        print("--- 🎓 Student Pass/Fail Predictor CLI ---")
-        study_h = float(input("Daily study hours: "))
-        att = float(input("Attendance percentage: "))
-        prev_s = float(input("Previous score percentage: "))
-        assign = int(input("Assignments completed: "))
-
     try:
+        if any(v is not None for v in provided):
+            if any(v is None for v in provided):
+                parser.error("Must provide all 4 parameters or run without arguments for interactive CLI.")
+            study_h, att, prev_s, assign = (
+                args.study_hours,
+                args.attendance,
+                args.previous_score,
+                args.assignments_completed,
+            )
+        else:
+            print("--- 🎓 Student Pass/Fail Predictor CLI ---")
+            study_h = float(input("Daily study hours: "))
+            att = float(input("Attendance percentage: "))
+            prev_s = float(input("Previous score percentage: "))
+            assign = int(input("Assignments completed: "))
+
         result, conf, reason = predict_result(study_h, att, prev_s, assign)
         print(f"\nPrediction: [{result}]")
         print(f"Confidence: {conf:.1f}%")
