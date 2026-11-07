@@ -13,6 +13,30 @@ def test_valid_pass_prediction():
     assert confidence > 50.0
 
 
+def test_prediction_trains_model_lazily_when_no_model_is_injected(monkeypatch):
+    class StubModel:
+        def predict(self, _sample):
+            return ["Pass"]
+
+        def predict_proba(self, _sample):
+            return [[0.2, 0.8]]
+
+    calls = []
+    model = StubModel()
+
+    def train_stub():
+        calls.append(True)
+        return model, 0.8, None
+
+    monkeypatch.setattr(app, "train_model", train_stub)
+
+    result, confidence, _ = predict_result(7.0, 85.0, 78.0, 10)
+
+    assert result == "Pass"
+    assert confidence == 80.0
+    assert len(calls) == 1
+
+
 def test_academic_minimum_attendance_rule():
     # Student with less than 75% attendance must fail
     result, confidence, explanation = predict_result(
